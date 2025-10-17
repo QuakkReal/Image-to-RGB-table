@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Image to Table</title></head>
+<body>
+<input type="file" id="imgInput">
+<input type="number" id="resInput" value="32">
+<button onclick="process()">Generate TXT</button>
+<script>
+function process(){
+    const file=document.getElementById('imgInput').files[0];
+    const res=parseInt(document.getElementById('resInput').value)||32;
+    const reader=new FileReader();
+    reader.onload=function(e){
+        const img=new Image();
+        img.onload=function(){
+            const canvas=document.createElement('canvas');
+            const ctx=canvas.getContext('2d');
+            canvas.width=res; canvas.height=res;
+            ctx.drawImage(img,0,0,res,res);
+            const data=ctx.getImageData(0,0,res,res).data;
+            const pixels=[];
+            for(let y=0;y<res;y++){
+                const row=[];
+                for(let x=0;x<res;x++){
+                    const i=(y*res+x)*4;
+                    row.push([data[i],data[i+1],data[i+2]]);
+                }
+                pixels.push(row);
+            }
+            const txt=JSON.stringify(pixels);
+            const blob=new Blob([txt],{type:'text/plain'});
+            const a=document.createElement('a');
+            a.href=URL.createObjectURL(blob);
+            a.download='image_pixels.txt';
+            a.click();
+        };
+        img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+</script>
+</body>
+</html>
